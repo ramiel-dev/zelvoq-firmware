@@ -46,3 +46,15 @@
 #define RGBLIGHT_HUE_STEP 10
 #define RGBLIGHT_SAT_STEP 17
 #define RGBLIGHT_VAL_STEP 17
+
+/* --- Ahorro de flash (AVR ATmega32U4, 28672 bytes) ---
+ *
+ * QMK 0.34.6 crece ~780 bytes respecto a 0.23.9 y el build quedaba al 99%.
+ * Lo de abajo no le quita ninguna funcion al usuario final:
+ *
+ * - LAYER_STATE_8BIT: VIA usa 4 capas; el default son 16. Nada que perder.
+ * - LOCKING_SUPPORT: solo sirve con un switch Cherry MX Lock fisico.
+ */
+#define LAYER_STATE_8BIT
+#undef LOCKING_SUPPORT_ENABLE
+#undef LOCKING_RESYNC_ENABLE
