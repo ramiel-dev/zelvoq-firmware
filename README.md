@@ -20,7 +20,7 @@ actualizable.
 |---|---|---|
 | Sofle | `sofle/rev1:via` | migrado |
 | Lily58 | `lily58/rev1:via` | migrado |
-| Corne | `crkbd/rev1:via` | pendiente |
+| Corne | `crkbd/rev1:via` (+ RP2040) | migrado |
 | Helix | `helix/rev3_5rows:via`, `helix/rev3_4rows:via` | pendiente |
 
 ## Que se conservo del arbol 0.23.9
@@ -47,6 +47,30 @@ actualizable.
 
 - `#define MASTER_LEFT`, que el arbol viejo forzaba.
 
+**Corne** — el layout quedo identico; difiere del keymap `via` oficial en dos
+lineas de keycodes y tres efectos RGB.
+
+- `MASTER_LEFT` y `SPLIT_USB_DETECT`.
+- Se fuerza `RGBLIGHT_ENABLE = yes` / `RGB_MATRIX_ENABLE = no`: **upstream
+  cambio el default de rev1 a RGB_MATRIX**, y los teclados ya vendidos corren
+  underglow.
+- Los 10 efectos RGBLIGHT del arbol viejo. El keymap oficial deja `RGB_TEST`,
+  `ALTERNATING` y `TWINKLE` comentados.
+- Encoders/capa 3: `RGB_TOG`->`UG_TOGG`, `RGB_MOD`->`UG_NEXT`, y los seis
+  hue/sat/val a `UG_*`.
+- Se quitaron `RGBLED_NUM`, `RGBLED_SPLIT` y `RGBLIGHT_LIMIT_VAL`: hoy los
+  aportan `crkbd/rev1/keyboard.json` (54 LEDs, 27/27, pin D3) y
+  `crkbd/info.json` (`max_brightness: 120`). Upstream absorbio exactamente lo
+  que el arbol viejo tenia parchado a mano en `rev1/config.h`.
+- Se quitaron `SWAP_HANDS_ENABLE` y `SPLIT_KEYBOARD`.
+- `lib/host_led_state_reader.c` del arbol viejo usaba `USB_LED_NUM_LOCK`, que ya
+  no existe en QMK. No importa: el keymap `via` nunca lo compilaba.
+
+Alternativa medida para el Corne, si algun dia se quiere pasar a per-key:
+RGB_MATRIX da 23742 (82%, 4930 libres) contra 26434 (92%) de RGBLIGHT. Es mas
+chico porque upstream compila menos animaciones por defecto que los 10 efectos
+de underglow. Cambiarlo resetea la configuracion de luces guardada en EEPROM.
+
 ## Uso
 
 ```
@@ -58,6 +82,12 @@ Un target suelto:
 
 ```
 qmk compile -kb sofle/rev1 -km via
+```
+
+Variante RP2040 del Corne:
+
+```
+qmk compile -kb crkbd/rev1 -km via -e CONVERT_TO=promicro_rp2040
 ```
 
 ## Respaldo
