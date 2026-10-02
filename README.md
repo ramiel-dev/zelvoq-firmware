@@ -21,7 +21,8 @@ actualizable.
 | Sofle | `sofle/rev1:via` | migrado |
 | Lily58 | `lily58/rev1:via` | migrado |
 | Corne | `crkbd/rev1:via` (+ RP2040) | migrado |
-| Helix | `helix/rev3_5rows:via`, `helix/rev3_4rows:via` | pendiente |
+| Helix 5 filas | `helix/rev3:via` | migrado |
+| Helix 4 filas | `helix/rev3:via_4row` | migrado |
 
 ## Que se conservo del arbol 0.23.9
 
@@ -71,6 +72,47 @@ RGB_MATRIX da 23742 (82%, 4930 libres) contra 26434 (92%) de RGBLIGHT. Es mas
 chico porque upstream compila menos animaciones por defecto que los 10 efectos
 de underglow. Cambiarlo resetea la configuracion de luces guardada en EEPROM.
 
+**Helix** — el caso mas invasivo, y el unico donde no se pudo preservar el
+comportamiento.
+
+- Upstream **unifico** `rev3_4rows` y `rev3_5rows` en un solo `helix/rev3` con
+  dos layouts. De ahi los dos keymaps: `via` (5 filas) y `via_4row` (4 filas).
+  `LAYOUT(` paso a `LAYOUT_5row(` / `LAYOUT_4row(`.
+- **La iluminacion cambia a RGB_MATRIX a la fuerza.** Upstream dejo Helix solo
+  con matrix: `keyboards/helix/helix.c` llama `rgb_matrix_get_mode()` y
+  compañia **sin guardas `#ifdef`**, desde `oled_task_kb()`. Con OLED activo y
+  `RGB_MATRIX_ENABLE = no` el arbol de upstream no compila. No es una eleccion
+  nuestra ni se puede sortear desde el userspace.
+- Por lo mismo se **elimino `oled_display.c`**: leia el estado del underglow
+  (`rgblight_get_mode` / `_hue` / `_sat` / `_val`), que con matrix no aplica.
+  No se pierde nada: upstream absorbio esa misma pantalla dentro de `helix.c`
+  (logo Mac/Win, capa, NUM/CAP/SCR y estado del LED).
+- `is_mac_mode()` vivia en `rev3_5rows.c` / `rev3_4rows.c`, archivos de placa que
+  upstream borro al unificar. Se porto al `keymap.c` de cada variante: la usan
+  las teclas **EISU y KANA** para conmutar entrada japonesa. No se portaron
+  `set_mac_mode()` ni `dip_switch_update_kb()`, que dependian del dip switch
+  (desactivado en este producto).
+- Diferencia entre los dos modelos, heredada del arbol viejo: el de 5 filas va
+  **sin encoder y sin extrakey**; el de 4 filas **con ambos**.
+- El de 4 filas tiene 50 LEDs y upstream declara 64 para `rev3`. Verificado que
+  es benigno: los 7 LEDs de la quinta fila de cada mitad caen **al final de la
+  cadena** (indices 25-31 y 57-63), asi que 0-24 mapean correcto y los 7 extra
+  son escrituras al vacio.
+- Se quitaron `RGBLED_NUM`, `RGBLED_SPLIT`, `DIP_SWITCH_MATRIX_GRID` y
+  `OLED_FONT_H`: hoy los aportan `helix/rev3/keyboard.json`, `helix/info.json` y
+  `helix/config.h`. El `glcdfont.c` propio tenia **datos identicos** al de
+  upstream, asi que no se arrastra.
+- `MOUSEKEY_ENABLE = no` en ambos: ningun keymap usa keycodes de mouse, y
+  recupera flash (el de 4 filas pasa de 96% a 92%).
+- **`AVR_USE_MINIMAL_PRINTF` queda prohibido aqui**: el `oled_display.c`
+  original usaba `snprintf` con `"%2d"` y el printf minimo no soporta ancho de
+  campo. Si alguien reintroduce esa pantalla, no activar esa opcion.
+
+Cabo suelto: `sin-usar/helix-futu-font.c` es un font propio (distinto del
+`glcdfont.c` de upstream) que estaba en `keyboards/helix/common/futu.c` del
+arbol viejo **sin que nada lo referenciara**. Se conserva por si era para
+branding; no entra en ningun build.
+
 ## Uso
 
 ```
@@ -88,6 +130,12 @@ Variante RP2040 del Corne:
 
 ```
 qmk compile -kb crkbd/rev1 -km via -e CONVERT_TO=promicro_rp2040
+```
+
+Helix de 4 filas (el de 5 filas es el keymap `via`):
+
+```
+qmk compile -kb helix/rev3 -km via_4row
 ```
 
 ## Respaldo

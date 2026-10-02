@@ -3,6 +3,8 @@
     "build_targets": [
         ["sofle/rev1", "via"],
         ["lily58/rev1", "via"],
-        ["crkbd/rev1", "via"]
+        ["crkbd/rev1", "via"],
+        ["helix/rev3", "via"],
+        ["helix/rev3", "via_4row"]
     ]
 }
