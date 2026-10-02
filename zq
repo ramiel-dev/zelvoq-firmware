@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+# zq — construye y flashea el firmware de produccion de Zelvoq.
+#
+# Existe por dos razones:
+#
+#  1. `qmk` sin QMK_HOME apunta a ~/qmk_firmware, que es el arbol CONGELADO en
+#     0.23.9. El mismo comando compila ahi sin avisar y con el mismo nombre de
+#     archivo de salida, asi que es facil flashear la version vieja creyendo que
+#     es la nueva. Este script fija el arbol y el userspace siempre.
+#  2. Los nombres cortos de teclado ya no son fiables: `-kb helix` resuelve a
+#     helix/beta, no a helix/rev3.
+
+set -euo pipefail
+
+export QMK_HOME="$HOME/qmk_firmware_new"
+export QMK_USERSPACE="$HOME/qmk-userspace-zelvoq"
+
+usage() {
+    cat <<'EOF'
+Uso: zq <accion> <modelo>
+
+Acciones:
+  build    compila y deja el binario en el userspace
+  flash    compila y flashea (AVR, por mitad)
+  show     muestra el comando que se ejecutaria, sin hacer nada
+
+Modelos:
+  sofle          sofle/rev1:via            AVR
+  lily58         lily58/rev1:via           AVR
+  corne          crkbd/rev1:via            AVR
+  corne-rp2040   crkbd/rev1:via            RP2040 (.uf2)
+  helix5         helix/rev3:via            AVR, 5 filas
+  helix4         helix/rev3:via_4row       AVR, 4 filas
+  todos          los cinco targets AVR (solo con build/show)
+
+Notas:
+  - Los splits usan MASTER_LEFT, no EE_HANDS: se flashea cada mitad por
+    separado reseteando una a la vez, con el bootloader `avrdude` normal.
+    Las variantes avrdude-split-left/right son para EE_HANDS; aqui no.
+  - corne-rp2040 no se flashea con avrdude: montar la mitad en modo BOOTSEL y
+    copiar el .uf2 al volumen que aparece.
+  - Si algo sale mal, los binarios de 0.23.9 estan en ~/qmk-emergency-flash/bin/
+EOF
+}
+
+target_for() {
+    case "$1" in
+        sofle)        echo "sofle/rev1 via" ;;
+        lily58)       echo "lily58/rev1 via" ;;
+        corne)        echo "crkbd/rev1 via" ;;
+        corne-rp2040) echo "crkbd/rev1 via CONVERT_TO=promicro_rp2040" ;;
+        helix5)       echo "helix/rev3 via" ;;
+        helix4)       echo "helix/rev3 via_4row" ;;
+        *)            return 1 ;;
+    esac
+}
+
+TODOS="sofle lily58 corne helix5 helix4"
+
+run_one() {
+    local action="$1" model="$2" spec kb km extra=()
+    spec="$(target_for "$model")" || { echo "zq: modelo desconocido: $model" >&2; return 1; }
+    read -r kb km conv <<<"$spec"
+    [ -n "${conv:-}" ] && extra=(-e "$conv")
+
+    if [ "$model" = "corne-rp2040" ] && [ "$action" = "flash" ]; then
+        echo "zq: el Corne RP2040 no se flashea con avrdude."
+        echo "    Compilo el .uf2; despues monta la mitad en BOOTSEL y copialo."
+        action="build"
+    fi
+
+    case "$action" in
+        show)  echo "QMK_HOME=$QMK_HOME QMK_USERSPACE=$QMK_USERSPACE"
+               echo "qmk compile -kb $kb -km $km ${extra[*]:-}" ;;
+        build) echo "### build $model  ($kb:$km)"
+               qmk compile -kb "$kb" -km "$km" ${extra[@]+"${extra[@]}"} ;;
+        flash) echo "### flash $model  ($kb:$km) — resetea UNA mitad ahora"
+               qmk flash -kb "$kb" -km "$km" -bl avrdude ${extra[@]+"${extra[@]}"} ;;
+        *)     usage; return 1 ;;
+    esac
+}
+
+[ $# -eq 2 ] || { usage; exit 1; }
+
+if [ "$2" = "todos" ]; then
+    [ "$1" = "flash" ] && { echo "zq: 'todos' no se usa con flash." >&2; exit 1; }
+    for m in $TODOS; do run_one "$1" "$m"; done
+else
+    run_one "$1" "$2"
+fi

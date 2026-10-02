@@ -115,28 +115,42 @@ branding; no entra en ningun build.
 
 ## Uso
 
-```
-qmk config user.overlay_dir="$HOME/qmk-userspace-zelvoq"
-qmk userspace-compile
-```
-
-Un target suelto:
+Usar `./zq`, que fija el arbol y el userspace:
 
 ```
-qmk compile -kb sofle/rev1 -km via
+./zq build sofle          # compila uno
+./zq build todos          # los cinco AVR
+./zq flash sofle          # compila y flashea (resetear una mitad)
+./zq show helix4          # muestra el comando, sin ejecutar
 ```
 
-Variante RP2040 del Corne:
+Modelos: `sofle`, `lily58`, `corne`, `corne-rp2040`, `helix5`, `helix4`, `todos`.
+
+### Por que un script y no `qmk` a secas
+
+Dos trampas reales:
+
+1. **`qmk` sin `QMK_HOME` apunta a `~/qmk_firmware`**, el arbol congelado en
+   0.23.9. Un `qmk flash -kb sofle -km via -bl avrdude` suelto compila ahi **sin
+   error y sin aviso**, y el archivo de salida se llama igual
+   (`sofle_rev1_via.hex`). Es facil flashear la version vieja creyendo que es la
+   nueva, o al reves.
+2. **`-kb helix` resuelve a `helix/beta`, no a `helix/rev3`**, y falla. Hay que
+   escribir la revision completa. (`-kb sofle` y `-kb crkbd` si resuelven bien,
+   a `sofle/rev1` y `crkbd/rev1`.)
+
+A mano, con las variables puestas, la linea de siempre sigue sirviendo:
 
 ```
-qmk compile -kb crkbd/rev1 -km via -e CONVERT_TO=promicro_rp2040
+QMK_HOME=~/qmk_firmware_new QMK_USERSPACE=~/qmk-userspace-zelvoq \
+  qmk flash -kb sofle -km via -bl avrdude
 ```
 
-Helix de 4 filas (el de 5 filas es el keymap `via`):
-
-```
-qmk compile -kb helix/rev3 -km via_4row
-```
+`-bl avrdude` sigue siendo correcto. Los splits usan `MASTER_LEFT`, no
+`EE_HANDS`, asi que se flashea cada mitad por separado reseteando una a la vez;
+las variantes `avrdude-split-left` / `-right` son para `EE_HANDS` y aqui no
+aplican. El Corne RP2040 no usa avrdude: montar la mitad en BOOTSEL y copiar el
+`.uf2`.
 
 ## Respaldo
 
