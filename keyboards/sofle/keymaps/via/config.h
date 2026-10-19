@@ -24,14 +24,31 @@
 
 /* Underglow (RGBLIGHT).
  *
- * El pin de datos (D3), el conteo de LEDs (72) y el reparto por mitad (36/36)
- * los aporta keyboards/sofle/info.json de upstream. NO redeclararlos aqui:
- * en 0.23.9 estaban en este config.h como WS2812_DI_PIN / RGBLED_NUM /
- * RGBLED_SPLIT, y RGBLED_NUM ya se llama RGBLIGHT_LED_COUNT.
+ * El pin de datos (D3) lo aporta keyboards/sofle/info.json de upstream.
+ *
+ * El conteo SI se sobrescribe. Upstream declara 72 LEDs en 36/36 porque el
+ * Sofle RGB completo lleva, por mitad, 1 indicador + 6 de underglow + 29 por
+ * tecla. Las unidades de Zelvoq pueblan **solo 6 por mitad**: el underglow,
+ * que va al principio de la cadena (ver la nota de la linea inalambrica).
+ *
+ * Declarar 72 sobre 12 LEDs reales no rompe nada electricamente, pero reparte
+ * las animaciones entre 36 posiciones por mitad de las que solo se ven las
+ * primeras 6: el gradiente sale lavado, casi plano. Con 6 el efecto recorre
+ * exactamente los LEDs que existen.
+ *
+ * Hace falta #undef: el info_config.h generado del JSON se procesa ANTES que
+ * este archivo, asi que sus #ifndef ya no protegen y redefinir da -Werror.
+ * RGBLIGHT_SPLIT no se declara: rgblight_post_config.h lo deriva solo de
+ * RGBLED_SPLIT.
  *
  * Se usa RGBLIGHT, no RGB_MATRIX, para conservar el comportamiento que
  * tienen hoy los teclados vendidos. El PCB soporta ambos sobre el mismo pin.
  */
+#undef RGBLIGHT_LED_COUNT
+#define RGBLIGHT_LED_COUNT 12
+#undef RGBLED_SPLIT
+#define RGBLED_SPLIT { 6, 6 }
+
 #define RGBLIGHT_EFFECT_BREATHING
 #define RGBLIGHT_EFFECT_RAINBOW_MOOD
 #define RGBLIGHT_EFFECT_RAINBOW_SWIRL
