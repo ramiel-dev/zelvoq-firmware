@@ -34,10 +34,34 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define QUICK_TAP_TERM 0
 #define TAPPING_TERM 100
 
-// Underglow (bloque inactivo, igual que en 0.23.9).
-// RGBLED_NUM paso a llamarse RGBLIGHT_LED_COUNT en QMK moderno.
-/*
-#undef RGBLIGHT_LED_COUNT
-#define RGBLIGHT_LED_COUNT 14    // Number of LEDs
-#define RGBLIGHT_SLEEP
-*/
+/* Underglow (RGBLIGHT).
+ *
+ * El conteo de LEDs (12) y el pin de datos (D3) los aporta
+ * keyboards/lily58/rev1/keyboard.json de upstream. Lo que upstream NO declara
+ * es el reparto por mitad, y sin el la mitad esclava se queda a oscuras:
+ * RGBLIGHT_SPLIT + RGBLED_SPLIT son lo que hace que el master le mande datos.
+ *
+ * Son 6 LEDs por mitad en la strip de este modelo.
+ */
+#define RGBLIGHT_SPLIT
+#define RGBLED_SPLIT { 6, 6 }
+
+#define RGBLIGHT_EFFECT_BREATHING
+#define RGBLIGHT_EFFECT_RAINBOW_MOOD
+#define RGBLIGHT_EFFECT_RAINBOW_SWIRL
+#define RGBLIGHT_EFFECT_STATIC_GRADIENT
+/* SNAKE (282 B) y KNIGHT (266 B) quedan fuera: son los dos efectos mas caros
+ * del set y los menos pedidos. Reactivarlos cuesta ~550 bytes de los que hay
+ * libres; medir antes. */
+#define RGBLIGHT_LIMIT_VAL 120
+#define RGBLIGHT_HUE_STEP 10
+#define RGBLIGHT_SAT_STEP 17
+#define RGBLIGHT_VAL_STEP 17
+
+/* Fuente OLED con el logo de Zelvoq en los glifos del logo. Reemplaza a
+ * keyboards/lily58/lib/glcdfont_lily.c y ocupa lo mismo: no cuesta flash.
+ * Se regenera con herramientas/gen-oled-logo.py.
+ *
+ * El #undef es necesario: keyboards/lily58/config.h ya define OLED_FONT_H. */
+#undef OLED_FONT_H
+#define OLED_FONT_H "glcdfont_zelvoq.c"
