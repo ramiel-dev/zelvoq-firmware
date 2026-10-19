@@ -49,16 +49,20 @@ actualizable.
 - `#define MASTER_LEFT`, que el arbol viejo forzaba.
 
 **Corne** — el layout quedo identico; difiere del keymap `via` oficial en dos
-lineas de keycodes y tres efectos RGB.
+lineas de keycodes.
 
 - `MASTER_LEFT` y `SPLIT_USB_DETECT`.
-- Se fuerza `RGBLIGHT_ENABLE = yes` / `RGB_MATRIX_ENABLE = no`: **upstream
-  cambio el default de rev1 a RGB_MATRIX**, y los teclados ya vendidos corren
-  underglow.
-- Los 10 efectos RGBLIGHT del arbol viejo. El keymap oficial deja `RGB_TEST`,
-  `ALTERNATING` y `TWINKLE` comentados.
-- Encoders/capa 3: `RGB_TOG`->`UG_TOGG`, `RGB_MOD`->`UG_NEXT`, y los seis
-  hue/sat/val a `UG_*`.
+- **RGB_MATRIX**, que es el default de upstream para rev1. El Corne de Zelvoq
+  puebla los 54 LEDs completos: por mitad, 6 de underglow y **21 por tecla**.
+  Con RGBLIGHT esos 21 serian un tramo mas de una tira lineal y un barrido
+  pasaria por debajo sin relacion con las teclas.
+- `RGB_MATRIX_KEYPRESSES` y `SPLIT_TRANSPORT_MIRROR`, que upstream no declara
+  para crkbd. Sin el segundo, las pulsaciones de una mitad no iluminan nada en
+  la otra y los efectos reactivos quedan a medias.
+- Diez animaciones. Las seis reactivas (heatmap, los tres solid reactive,
+  splash y solid splash) son las que el arbol 0.23.9 ya tenia descomentadas en
+  `crkbd/r2g/config.h`; upstream no activa ninguna, solo color solido.
+- Encoders/capa 3 en `RM_*`.
 - Se quitaron `RGBLED_NUM`, `RGBLED_SPLIT` y `RGBLIGHT_LIMIT_VAL`: hoy los
   aportan `crkbd/rev1/keyboard.json` (54 LEDs, 27/27, pin D3) y
   `crkbd/info.json` (`max_brightness: 120`). Upstream absorbio exactamente lo
@@ -66,11 +70,6 @@ lineas de keycodes y tres efectos RGB.
 - Se quitaron `SWAP_HANDS_ENABLE` y `SPLIT_KEYBOARD`.
 - `lib/host_led_state_reader.c` del arbol viejo usaba `USB_LED_NUM_LOCK`, que ya
   no existe en QMK. No importa: el keymap `via` nunca lo compilaba.
-
-Alternativa medida para el Corne, si algun dia se quiere pasar a per-key:
-RGB_MATRIX da 23742 (82%, 4930 libres) contra 26434 (92%) de RGBLIGHT. Es mas
-chico porque upstream compila menos animaciones por defecto que los 10 efectos
-de underglow. Cambiarlo resetea la configuracion de luces guardada en EEPROM.
 
 **Helix** — el caso mas invasivo, y el unico donde no se pudo preservar el
 comportamiento.

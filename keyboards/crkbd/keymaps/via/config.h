@@ -26,29 +26,37 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #define SPLIT_USB_DETECT
 
-/* Underglow (RGBLIGHT).
+/* Iluminacion: RGB_MATRIX.
  *
- * El conteo de LEDs (54), el reparto por mitad (27/27), el pin de datos (D3) y
- * el brillo maximo (120) los aporta crkbd/rev1/keyboard.json y crkbd/info.json
- * de upstream. En 0.23.9 estaban a mano aqui y en rev1/config.h como
- * RGBLED_NUM / RGBLED_SPLIT / RGBLIGHT_LIMIT_VAL; ya no hace falta.
+ * El Corne de Zelvoq puebla los 54 LEDs completos: por mitad, 6 de underglow
+ * y 21 por tecla. RGB_MATRIX es lo que corresponde a ese hardware; con
+ * RGBLIGHT los 21 por tecla serian un tramo mas de una tira lineal y un
+ * barrido pasaria por debajo sin relacion con las teclas.
  *
- * Los efectos y los pasos de ajuste si siguen siendo cosa del keymap.
- * Se mantienen los 10 que tenia el arbol viejo: el keymap via oficial deja
- * RGB_TEST, ALTERNATING y TWINKLE comentados, nosotros no.
+ * El conteo (54), el reparto (27/27), el pin (D3) y el brillo maximo (120)
+ * los aporta crkbd/rev1/keyboard.json y crkbd/info.json. rgb_matrix ya es el
+ * default de upstream para rev1, asi que rules.mk no sobrescribe nada.
  */
-#define RGBLIGHT_EFFECT_BREATHING
-#define RGBLIGHT_EFFECT_RAINBOW_MOOD
-#define RGBLIGHT_EFFECT_RAINBOW_SWIRL
-#define RGBLIGHT_EFFECT_SNAKE
-#define RGBLIGHT_EFFECT_KNIGHT
-#define RGBLIGHT_EFFECT_CHRISTMAS
-#define RGBLIGHT_EFFECT_STATIC_GRADIENT
-#define RGBLIGHT_EFFECT_RGB_TEST
-#define RGBLIGHT_EFFECT_ALTERNATING
-#define RGBLIGHT_EFFECT_TWINKLE
-#define RGBLIGHT_HUE_STEP 10
-#define RGBLIGHT_SAT_STEP 17
-#define RGBLIGHT_VAL_STEP 17
+
+/* Necesario para los efectos reactivos. SPLIT_TRANSPORT_MIRROR hace que la
+ * mitad esclava reciba el estado de la matriz; sin el, las pulsaciones de una
+ * mitad no iluminan nada en la otra. Upstream no lo declara para crkbd. */
+#define RGB_MATRIX_KEYPRESSES
+#define SPLIT_TRANSPORT_MIRROR
+
+/* Ambientes. */
+#define ENABLE_RGB_MATRIX_BREATHING
+#define ENABLE_RGB_MATRIX_CYCLE_LEFT_RIGHT
+#define ENABLE_RGB_MATRIX_CYCLE_PINWHEEL
+#define ENABLE_RGB_MATRIX_RAINBOW_MOVING_CHEVRON
+
+/* Reactivos: son los que el arbol 0.23.9 ya tenia descomentados en
+ * crkbd/r2g/config.h, o sea los que ya estaban elegidos. */
+#define ENABLE_RGB_MATRIX_TYPING_HEATMAP
+#define ENABLE_RGB_MATRIX_SOLID_REACTIVE_SIMPLE
+#define ENABLE_RGB_MATRIX_SOLID_REACTIVE
+#define ENABLE_RGB_MATRIX_SOLID_REACTIVE_MULTINEXUS
+#define ENABLE_RGB_MATRIX_SPLASH
+#define ENABLE_RGB_MATRIX_SOLID_SPLASH
 
 #define OLED_FONT_H "keyboards/crkbd/lib/glcdfont.c"
