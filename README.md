@@ -125,6 +125,21 @@ Usar `./zq`, que fija el arbol y el userspace:
 
 Modelos: `sofle`, `lily58`, `corne`, `corne-rp2040`, `helix5`, `helix4`, `todos`.
 
+### Verificar un teclado flasheado
+
+```
+python3 -I herramientas/via-check.py corne
+```
+
+Lee por raw HID (solo lectura) el protocolo de VIA, el uptime, las capas y los
+primeros keycodes de la EEPROM, y dice que canal de iluminacion responde:
+RGBLIGHT o RGB_MATRIX. Sin argumento prueba todos los modelos conectados.
+
+Sirve para distinguir "escribio bien" de "escribio bien pero la EEPROM quedo
+con datos del firmware anterior". Lo que **no** se puede leer es el estado de
+la matriz de teclas: QMK lo bloquea salvo que se compile con `VIA_INSECURE`,
+porque seria keylogging. No activarlo en firmware de produccion.
+
 ### Por que un script y no `qmk` a secas
 
 Dos trampas reales:
