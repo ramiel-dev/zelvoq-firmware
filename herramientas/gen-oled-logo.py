@@ -46,12 +46,22 @@ def render(path):
     return canvas.point(lambda p: 255 if p > THRESHOLD else 0, mode="1")
 
 
+def sin_comentarios(src):
+    """Quita // y /* */.
+
+    La fuente por defecto de QMK anota cada glifo con un comentario del tipo
+    `// 0x41 A`, y esos 0x.. se colarian como datos: 224 bytes de mas sobre
+    1344, justo uno por glifo, y todo el font queda desplazado.
+    """
+    src = re.sub(r"/\*.*?\*/", "", src, flags=re.S)
+    return re.sub(r"//[^\n]*", "", src)
+
+
 def array_body(path):
-    """El texto entre las llaves del array. Leer el archivo entero haria que
-    cualquier 0x.. de un comentario entrara como dato y desplazara los glifos."""
+    """El texto entre las llaves del array, ya sin comentarios."""
     src = open(path).read()
     start = src.index("{", src.index("font[]"))
-    return src[start + 1 : src.rindex("}")]
+    return sin_comentarios(src[start + 1 : src.rindex("}")])
 
 
 def slice_glyphs(img):
@@ -76,6 +86,11 @@ def main():
 
     new = slice_glyphs(render(logo))
 
+    crudo = open(base).read()
+    # Preservar el calificador de la fuente base: la de QMK por defecto declara
+    # font[] como static y la de crkbd no. Emitir siempre lo mismo cambiaria
+    # como se enlaza el simbolo.
+    estatico = "static const unsigned char font[]" in crudo
     data = [int(b, 16) for b in re.findall(r"0x([0-9A-Fa-f]{2})", array_body(base))]
     if len(data) % GLYPH_W:
         sys.exit(f"la fuente base no es multiplo de {GLYPH_W}: {len(data)} bytes")
@@ -98,7 +113,8 @@ def main():
             "// dibuja como logo. El resto es\n"
             "// la fuente ASCII original, asi que el tamanho en flash no cambia.\n\n"
             '#include "progmem.h"\n\n'
-            "const unsigned char font[] PROGMEM = {\n"
+            + ("static " if estatico else "")
+            + "const unsigned char font[] PROGMEM = {\n"
         )
         for g in glyphs:
             f.write("  " + ", ".join(f"0x{b:02X}" for b in g) + ",\n")

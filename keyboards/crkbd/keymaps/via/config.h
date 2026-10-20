@@ -59,4 +59,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define ENABLE_RGB_MATRIX_SPLASH
 #define ENABLE_RGB_MATRIX_SOLID_SPLASH
 
-#define OLED_FONT_H "keyboards/crkbd/lib/glcdfont.c"
+/* Pantalla de la mitad derecha: la marca de Zelvoq.
+ *
+ * QMK dibuja ese "logo" con 63 glifos de la fuente (0x80-0x94, 0xA0-0xB4 y
+ * 0xC0-0xD4): 21 glifos de 6x8 por fila, 3 filas, 126x24 px. Reemplazarlos
+ * dentro de la fuente cuesta CERO flash -la fuente ya estaba ahi y mantiene su
+ * tamanho- y pasa por el camino de texto del driver, que respeta la rotacion
+ * 180 de la esclava. oled_write_raw() no la respeta y saldria invertido.
+ *
+ * Se regenera con herramientas/gen-oled-logo.py desde el logo de marca.
+ */
+#define OLED_FONT_H "glcdfont_zelvoq.c"
