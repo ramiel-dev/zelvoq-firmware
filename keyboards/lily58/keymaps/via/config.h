@@ -23,10 +23,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 //#define USE_MATRIX_I2C
 
-/* Select hand configuration.
- * Unica diferencia real respecto al keymap via oficial: el arbol 0.23.9
- * forzaba master = mitad izquierda. Se conserva para no cambiar el
- * comportamiento de los teclados ya vendidos. */
+/* Handedness.
+ *
+ * SPLIT_USB_DETECT es obligatorio aqui, no cosmetico: sin el, el OLED se
+ * inicializa y muere a los pocos milisegundos. Con MASTER_LEFT a secas, la
+ * mitad que lleva el USB se cree esclava si es la derecha, y en ese estado la
+ * pantalla no sobrevive. Comprobado: el keymap via oficial tampoco lo declara
+ * y falla igual; el firmware de Sofle si lo lleva y por eso ahi se veia.
+ *
+ * MASTER_LEFT se mantiene como preferencia cuando la deteccion no decide. */
+#define SPLIT_USB_DETECT
 #define MASTER_LEFT
 // #define MASTER_RIGHT
 // #define EE_HANDS
