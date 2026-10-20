@@ -171,3 +171,15 @@ aplican. El Corne RP2040 no usa avrdude: montar la mitad en BOOTSEL y copiar el
 Los binarios del arbol congelado (QMK 0.23.9, commit `7df44ffb75`) estan en
 `~/qmk-emergency-flash/`, con checksums. Son la via de reflasheo si algo de
 esta migracion sale mal.
+
+## Licencia
+
+Estos keymaps derivan de QMK y de los keymaps `via` originales de cada teclado,
+bajo **GPL-2.0**. Se conservan los avisos de autoria de cada archivo; `LICENSE`
+es el texto integro, copiado de QMK.
+
+Este repositorio es publico porque los teclados se venden con este firmware ya
+flasheado. Entregar el binario es distribuirlo, y la GPL da derecho al
+comprador a obtener el codigo correspondiente. Publicarlo aqui es la forma mas
+simple de cumplirlo, y es el mismo modelo que usa el equipo de VIA con
+`the-via/qmk_userspace_via`.
